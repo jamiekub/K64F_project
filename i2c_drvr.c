@@ -27,13 +27,9 @@ void I2C0_init(uint8_t freq_div, uint8_t slave_addr)
   I2C0_C2 &= ~(I2C_C2_ADEXT_MASK);
   
   //Set slave address
-  //I2C0_A1 = (slave_addr << 1);
-  //I2C0_C1 |= I2C_C1_MST_MASK;
+  I2C0_A1 = (slave_addr << 1);
   
-  uint8_t dummy = I2C0_D;
-  //Enable I2C module
-  I2C0_C1 |= I2C_C1_IICEN_MASK;
-  //I2C0_C1 |= I2C_C1_IICIE_MASK;
+  I2C0_C1 = I2C_C1_IICEN_MASK;
   
   iic_mode = 0;
 }
@@ -41,9 +37,6 @@ void I2C0_init(uint8_t freq_div, uint8_t slave_addr)
 void i2c_tx(uint8_t slave_addr, uint8_t* buffer, uint32_t buf_size)
 {
   uint32_t idx = 0;
-  
-  //Return to idle state
-  I2C0_C1 = 0x80;
   
   //Wait for bus to be free
   while(I2C0_S & I2C_S_BUSY_MASK);
@@ -79,9 +72,6 @@ void i2c_rx(uint8_t slave_addr, uint8_t* buffer, uint32_t buf_size)
   uint8_t dummy_read;
   uint32_t idx = 0;
   
-  //Return to idle state
-  I2C0_C1 = 0x80;
-  
   //Wait for bus to be free
   while(I2C0_S & I2C_S_BUSY_MASK);
   
@@ -102,6 +92,10 @@ void i2c_rx(uint8_t slave_addr, uint8_t* buffer, uint32_t buf_size)
   I2C0_C1 &= ~(I2C_C1_TX_MASK);
   
   //Dummy read of data reg
+  if(buf_size - idx == 1)
+  {
+    I2C0_C1 |= I2C_C1_TXAK_MASK;
+  }
   dummy_read = I2C0_D;
   
   while(buf_size > idx)
@@ -135,9 +129,6 @@ void i2c_txrx(uint8_t slave_addr, uint8_t* txbuffer, uint32_t txbuf_size, uint8_
   uint32_t idx = 0;
   uint8_t dummy_read;
   
-  //Return to idle state
-  I2C0_C1 = 0x80;
-  
   //Wait for bus to be free
   while(I2C0_S & I2C_S_BUSY_MASK);
   
@@ -163,10 +154,6 @@ void i2c_txrx(uint8_t slave_addr, uint8_t* txbuffer, uint32_t txbuf_size, uint8_
 	  I2C0_S |= I2C_S_IICIF_MASK;
   }
   
-  //Wait
-  //idx = 10000;
-  //  while(idx--);
-  
   //Set repeat start and go into master Rx mode
   I2C0_C1 |= I2C_C1_RSTA_MASK;
   
@@ -181,6 +168,11 @@ void i2c_txrx(uint8_t slave_addr, uint8_t* txbuffer, uint32_t txbuf_size, uint8_
   //Enter receive mode
   I2C0_C1 &= ~(I2C_C1_TX_MASK);
   
+  if(rxbuf_size == 1)
+  {
+    //Send NAK
+    I2C0_C1 |= I2C_C1_TXAK_MASK;
+  }
   dummy_read = I2C0_D;
   idx = 0;
   
@@ -200,12 +192,10 @@ void i2c_txrx(uint8_t slave_addr, uint8_t* txbuffer, uint32_t txbuf_size, uint8_
     //Second to last byte to read?
     if(rxbuf_size - idx == 2)
     {
+      //Send NAK
       I2C0_C1 |= I2C_C1_TXAK_MASK;
     }
     
     rxbuffer[idx++] = I2C0_D;
   }
-  
-  //Return to idle state
-  I2C0_C1 = 0x80;
 }

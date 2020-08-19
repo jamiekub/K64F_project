@@ -3,7 +3,7 @@
 
 #define FXOS8700CQ_SLAVE_ADDR 0x1D
 #define FXOS8700CQ_BAUD 100000 // default speed (use 400000 for fast mode)
-#define FXOS8700CQ_ICR 0x43  // I2C baud rate = I2C module clock speed (Hz)/(mul × SCL divider)
+#define FXOS8700CQ_ICR 0x10  // I2C baud rate = I2C module clock speed (Hz)/(mul × SCL divider)
                              // SDA hold time = I2C module clock period (s) × mul × SDA hold value
                              // SCL start hold time = I2C module clock period (s) × mul × SCL start hold value
                              // SCL stop hold time = I2C module clock period (s) × mul × SCL stop hold value

@@ -22,37 +22,28 @@ int main(void)
 {  
 	// Initialize UART
 	initialize();
-  //Blue_LED(LED_ON);
-  if(FXOS8700CQ_init() == 1)
-  {
-    put("I2C initialization failure! :(\n\r");
-    Red_LED(LED_ON);
-  }
-  else
-  {
-	  put("I2C initialization success! :)\n\r");
-    Green_LED(LED_ON);
-  }
+  Blue_LED(LED_ON);
   
   for(;;)
   {
     if(SW3_pressed())
     {
-      //Blue_LED(LED_TOGGLE);
+      Blue_LED(LED_TOGGLE);
       //Red_LED(LED_ON);
-      if(whoami() == 1)
+      if(FXOS8700CQ_init() == 1)
       {
-        put("I2C failure! :(\n\r");
+        put("I2C initialization failure! :(\n\r");
         Red_LED(LED_ON);
       }
       else
       {
-	      put("I2C success! :)\n\r");
+	      put("I2C initialization success! :)\n\r");
         Green_LED(LED_ON);
       }
       delay(50);
-      //Red_LED(LED_OFF);
-      //Blue_LED(LED_TOGGLE);
+      Red_LED(LED_OFF);
+      Green_LED(LED_OFF);
+      Blue_LED(LED_TOGGLE);
     }/*
     else if(SW2_pressed())
     {
