@@ -1,6 +1,7 @@
 #ifndef  MAG_ACCEL_H
 #define  MAG_ACCEL_H
 
+#include "MK64F12.h"
 #define FXOS8700CQ_SLAVE_ADDR 0x1D
 #define FXOS8700CQ_BAUD 100000 // default speed (use 400000 for fast mode)
 #define FXOS8700CQ_ICR 0x10  // I2C baud rate = I2C module clock speed (Hz)/(mul × SCL divider)
@@ -135,7 +136,15 @@
 #define FXOS8700CQ_A_FFMT_THS_Z_MSB 0x77
 #define FXOS8700CQ_A_FFMT_THS_Z_LSB 0x78
 
+typedef struct
+{
+  int16_t x;
+  int16_t y;
+  int16_t z;
+} SRAWDATA;
+
 int FXOS8700CQ_init(void);
+uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData);
 int whoami(void);
 
 #endif

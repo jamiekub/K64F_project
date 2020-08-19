@@ -20,9 +20,23 @@ void delay(int del);
 
 int main(void)
 {  
+  char string[255];
+  uint8_t status;
+  SRAWDATA accel_data;
+  SRAWDATA mag_data;
+  
 	// Initialize UART
 	initialize();
-  Blue_LED(LED_ON);
+  if(FXOS8700CQ_init() == 1)
+  {
+    put("I2C initialization failure! :(\n\r");
+    Red_LED(LED_ON);
+  }
+  else
+  {
+	  put("I2C initialization success! :)\n\r");
+    Green_LED(LED_ON);
+  }
   
   for(;;)
   {
@@ -30,16 +44,11 @@ int main(void)
     {
       Blue_LED(LED_TOGGLE);
       //Red_LED(LED_ON);
-      if(FXOS8700CQ_init() == 1)
-      {
-        put("I2C initialization failure! :(\n\r");
-        Red_LED(LED_ON);
-      }
-      else
-      {
-	      put("I2C initialization success! :)\n\r");
-        Green_LED(LED_ON);
-      }
+      status = ReadAccelMagnData(&accel_data, &mag_data);
+      sprintf(string, "RAW Accelerometer Data: x:%d, y:%d, z:%d\n\r", accel_data.x, accel_data.y, accel_data.z);
+      put(string);
+      sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data.x, mag_data.y, mag_data.z);
+      put(string);
       delay(50);
       Red_LED(LED_OFF);
       Green_LED(LED_OFF);
