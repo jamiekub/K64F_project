@@ -44,6 +44,8 @@ int main(void)
       put(string);
       Blue_LED(LED_TOGGLE);
       Green_LED(LED_ON);
+      
+      FXOS8700CQ_init();
     }
     
     if(SW3_pressed())
@@ -133,7 +135,7 @@ void initialize()
   SW3_init();
   //Initialize I2C0 for communication with FXOS8700CQ
   I2C0_init(FXOS8700CQ_ICR, 0x21);
-  
+  FXOS8700CQ_INT_init();
   if(FXOS8700CQ_init() == 1)
   {
     //put("I2C initialization failure! :(\n\r");
@@ -143,6 +145,6 @@ void initialize()
   {
 	  //put("I2C initialization success! :)\n\r");
     Green_LED(LED_ON);
-    FXOS8700CQ_INT_init();
+    
   }
 }
