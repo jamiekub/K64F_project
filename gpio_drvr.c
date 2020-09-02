@@ -1,7 +1,7 @@
 #include "MK64F12.h"
 #include "gpio_drvr.h"
 
-void LED_init(void){
+void LED_init(){
     // Enable clocks on Ports B and E for LED timing
     SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
     SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK;
@@ -20,7 +20,7 @@ void LED_init(void){
     GPIOE_PSOR = (1UL << 26);
 }
 
-void SW2_init(void){
+void SW2_init(){
 	// Enable clock for Port C PTC6 button
 	SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK; 
 	
@@ -31,7 +31,7 @@ void SW2_init(void){
 	GPIOC_PDDR &= ~(1UL << 6);
 }
 
-void SW3_init(void){
+void SW3_init(){
   // Enable clock for Port A PTA4 button
   SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;
   
@@ -40,6 +40,26 @@ void SW3_init(void){
   
   // Set the button as an input
   GPIOA_PDDR &= ~(1UL << 4);
+}
+
+void FXOS8700CQ_INT_init()
+{
+  /*Initialize GPIO pin for receiving interrupts*/
+  
+  //Enable clock for Port C pin PTC13
+  SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
+  
+  //Configure pin mux for PTC13
+  PORTC_PCR13 = PORT_PCR_MUX(1); //INT2
+  //PORTC_PCR6 = PORT_PCR_MUX(1); //INT1
+  
+  //Since the default INT2 operation is push-pull active low,
+  //Configure PTC13 pin for falling edge interrupts
+  PORTC_PCR13 |= PORT_PCR_IRQC(0xA) | PORT_PCR_ISF_MASK;
+  //PORTC_PCR6 |= PORT_PCR_IRQC(0xA) | PORT_PCR_ISF_MASK;
+  
+  //Enable NVIC interrupt
+  NVIC_EnableIRQ(PORTC_IRQn);
 }
 
 void Red_LED(int op)
@@ -98,4 +118,10 @@ int SW2_pressed()
 int SW3_pressed()
 {
   return ((GPIOA_PDIR & (1UL << 4)) == 0);
+}
+
+void PORTC_IRQHandler()
+{
+  PORTC_PCR13 |= PORT_PCR_ISF_MASK;
+  DataReady = 1;
 }

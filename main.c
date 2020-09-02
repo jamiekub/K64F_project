@@ -24,22 +24,12 @@ int main(void)
   SRAWDATA accel_data;
   SRAWDATA mag_data;
   
-	// Initialize UART
 	initialize();
-  if(FXOS8700CQ_init() == 1)
-  {
-    //put("I2C initialization failure! :(\n\r");
-    Red_LED(LED_ON);
-  }
-  else
-  {
-	  //put("I2C initialization success! :)\n\r");
-    Green_LED(LED_ON);
-  }
   
   for(;;)
   {
-    if(DataReady == 1)
+    //i2c_read(FXOS8700CQ_INT_SOURCE, &status, 1);
+    if(DataReady == 1 )//|| status == 0x01)
     {
       Green_LED(LED_OFF);
       Blue_LED(LED_TOGGLE);
@@ -84,12 +74,20 @@ int main(void)
         sprintf(string, "CTRL REG1: 0x%02X\n\r", status);
         put(string);
         
-        i2c_read(FXOS8700CQ_CTRL_REG5, &status, 1);
-        sprintf(string, "CTRL REG5: 0x%02X\n\r", status);
+        i2c_read(FXOS8700CQ_CTRL_REG2, &status, 1);
+        sprintf(string, "CTRL REG2: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_CTRL_REG3, &status, 1);
+        sprintf(string, "CTRL REG3: 0x%02X\n\r", status);
         put(string);
         
         i2c_read(FXOS8700CQ_CTRL_REG4, &status, 1);
         sprintf(string, "CTRL REG4: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_CTRL_REG5, &status, 1);
+        sprintf(string, "CTRL REG5: 0x%02X\n\r", status);
         put(string);
         
         i2c_read(FXOS8700CQ_SYSMOD, &status, 1);
@@ -102,6 +100,14 @@ int main(void)
         
         i2c_read(FXOS8700CQ_STATUS, &status, 1);
         sprintf(string, "STATUS: 0x%02X\n\r", status);
+        put(string);
+        
+        status = ReadAccelMagnData(&accel_data, &mag_data);
+        sprintf(string, "Status: 0x%02X\n\r", status);
+        put(string);
+        sprintf(string, "RAW Accelerometer Data: x:%d, y:%d, z:%d\n\r", accel_data.x, accel_data.y, accel_data.z);
+        put(string);
+        sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data.x, mag_data.y, mag_data.z);
         put(string);
       }
       Blue_LED(LED_TOGGLE);
@@ -121,9 +127,22 @@ int main(void)
 
 void initialize()
 {
-	// Initialize UART
 	uart_init();
   LED_init();
   //SW2_init();
   SW3_init();
+  //Initialize I2C0 for communication with FXOS8700CQ
+  I2C0_init(FXOS8700CQ_ICR, 0x21);
+  
+  if(FXOS8700CQ_init() == 1)
+  {
+    //put("I2C initialization failure! :(\n\r");
+    Red_LED(LED_ON);
+  }
+  else
+  {
+	  //put("I2C initialization success! :)\n\r");
+    Green_LED(LED_ON);
+    FXOS8700CQ_INT_init();
+  }
 }

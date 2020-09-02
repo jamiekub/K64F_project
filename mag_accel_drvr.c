@@ -13,27 +13,7 @@ uint8_t DataReady = 0;
 void delay(int del);
 
 int FXOS8700CQ_init()
-{
-  //Initialize I2C0 for communication with FXOS8700CQ
-  I2C0_init(FXOS8700CQ_ICR, 0x21);
-  
-  /*Initialize GPIO pin for receiving interrupts*/
-  
-  //Enable clock for Port C pin PTC13
-  SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;
-  
-  //Configure pin mux for PTC13
-  PORTC_PCR13 = PORT_PCR_MUX(1); //INT2
-  //PORTC_PCR6 = PORT_PCR_MUX(1); //INT1
-  
-  //Since the default INT2 operation is push-pull active low,
-  //Configure PTC13 pin for falling edge interrupts
-  PORTC_PCR13 |= PORT_PCR_IRQC(0xA) | PORT_PCR_ISF_MASK;
-  //PORTC_PCR6 |= PORT_PCR_IRQC(0xA) | PORT_PCR_ISF_MASK;
-  
-  //Enable NVIC interrupt
-  NVIC_EnableIRQ(PORTC_IRQn);
-  
+{ 
   //read and check the WHOAMI register
   i2c_read(FXOS8700CQ_WHO_AM_I, I2C_buffer, 1);
   if(I2C_buffer[0] != 0xC7)
@@ -44,22 +24,16 @@ int FXOS8700CQ_init()
   }
   
   //Perform POR to place FXOS8700CQ into standby and set registers to defaults
-  FXOS8700CQ_rst();
-  //I2C_buffer[0] = FXOS8700CQ_CTRL_REG1;
-  //I2C_buffer[1] = 0x00;
-  //i2c_write(I2C_buffer, 1);
-  
-  // write 0000 0001= 0x01 to XYZ_DATA_CFG register
-  // [7]: reserved
-  // [6]: reserved
-  // [5]: reserved
-  // [4]: hpf_out=0
-  // [3]: reserved
-  // [2]: reserved
-  // [1-0]: fs=01 for accelerometer range of +/-4g range with 0.488mg/LSB
-  I2C_buffer[0] = FXOS8700CQ_XYZ_DATA_CFG;
+  //FXOS8700CQ_rst();
+  I2C_buffer[0] = FXOS8700CQ_CTRL_REG1;
   I2C_buffer[1] = 0x00;
   i2c_write(I2C_buffer, 1);
+  
+  do
+  {
+    i2c_read(FXOS8700CQ_SYSMOD, I2C_buffer, 1);
+  }
+  while(I2C_buffer[0] != 0x00);
   
   // write 0001 1111 = 0x1F to magnetometer control register 1
   // [7]: m_acal=0: auto calibration disabled
@@ -83,10 +57,22 @@ int FXOS8700CQ_init()
   I2C_buffer[1] = 0x20;
   i2c_write(I2C_buffer, 1);
   
-  //High Resolution mode
-  I2C_buffer[0] = FXOS8700CQ_CTRL_REG2;
-  I2C_buffer[1] = 0x02;
+  // write 0000 0001= 0x01 to XYZ_DATA_CFG register
+  // [7]: reserved
+  // [6]: reserved
+  // [5]: reserved
+  // [4]: hpf_out=0
+  // [3]: reserved
+  // [2]: reserved
+  // [1-0]: fs=01 for accelerometer range of +/-4g range with 0.488mg/LSB
+  I2C_buffer[0] = FXOS8700CQ_XYZ_DATA_CFG;
+  I2C_buffer[1] = 0x01;
   i2c_write(I2C_buffer, 1);
+  
+  //High Resolution mode
+  //I2C_buffer[0] = FXOS8700CQ_CTRL_REG2;
+  //I2C_buffer[1] = 0x02;
+  //i2c_write(I2C_buffer, 1);
   
   //Push-pull active low interrupt settings (default)
   I2C_buffer[0] = FXOS8700CQ_CTRL_REG3;
@@ -121,7 +107,7 @@ int FXOS8700CQ_init()
   // [1]: f_read=0 for normal 16 bit reads
   // [0]: active=1 to take the part out of standby and enable sampling
   I2C_buffer[0] = FXOS8700CQ_CTRL_REG1;
-  I2C_buffer[1] = 0x35;
+  I2C_buffer[1] = 0x0D;
   i2c_write(I2C_buffer, 1);
   
   return 0;
@@ -167,6 +153,7 @@ int whoami()
 
 /**
  * Reads buf_size many bytes from FXOS8700CQ starting at reg_addr address
+ * and places data into buffer
  */
 void i2c_read(uint8_t reg_addr, uint8_t* buffer, uint32_t buf_size)
 {
@@ -214,12 +201,6 @@ void FXOS8700CQ_rst()
   I2C0_C1 = 0x80;
   
   delay(1);
-}
-
-void PORTC_IRQHandler()
-{
-  PORTC_PCR13 |= PORT_PCR_ISF_MASK;
-  DataReady = 1;
 }
 
 /**

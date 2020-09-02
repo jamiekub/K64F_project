@@ -151,7 +151,5 @@ int whoami(void);
 void i2c_write(uint8_t* buffer, uint32_t buf_size);
 void i2c_read(uint8_t reg_addr, uint8_t* buffer, uint32_t buf_size);
 void delay(int del);
-  
-//Global data valid flag
-extern uint8_t DataReady;
+
 #endif
