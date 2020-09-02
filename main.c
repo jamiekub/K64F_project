@@ -16,7 +16,6 @@
 
 void initialize(void);
 void en_interrupts(void);
-void delay(int del);
 
 int main(void)
 {  
@@ -29,29 +28,82 @@ int main(void)
 	initialize();
   if(FXOS8700CQ_init() == 1)
   {
-    put("I2C initialization failure! :(\n\r");
+    //put("I2C initialization failure! :(\n\r");
     Red_LED(LED_ON);
   }
   else
   {
-	  put("I2C initialization success! :)\n\r");
+	  //put("I2C initialization success! :)\n\r");
     Green_LED(LED_ON);
   }
   
   for(;;)
   {
-    if(SW3_pressed())
+    if(DataReady == 1)
     {
+      Green_LED(LED_OFF);
       Blue_LED(LED_TOGGLE);
-      //Red_LED(LED_ON);
+      DataReady = 0;
+      
       status = ReadAccelMagnData(&accel_data, &mag_data);
+      sprintf(string, "Status: 0x%02X\n\r", status);
+      put(string);
       sprintf(string, "RAW Accelerometer Data: x:%d, y:%d, z:%d\n\r", accel_data.x, accel_data.y, accel_data.z);
       put(string);
       sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data.x, mag_data.y, mag_data.z);
       put(string);
-      delay(50);
+      Blue_LED(LED_TOGGLE);
+      Green_LED(LED_ON);
+    }
+    
+    if(SW3_pressed())
+    {
+      Blue_LED(LED_TOGGLE);
       Red_LED(LED_OFF);
       Green_LED(LED_OFF);
+      if(whoami() == 1)
+      {
+        Red_LED(LED_ON);
+      }
+      else
+      {
+        Green_LED(LED_ON);
+        i2c_read(FXOS8700CQ_M_CTRL_REG1, &status, 1);
+        sprintf(string, "M CTRL REG1: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_M_CTRL_REG2, &status, 1);
+        sprintf(string, "M CTRL REG2: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_XYZ_DATA_CFG, &status, 1);
+        sprintf(string, "XYZ DATA CFG: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_CTRL_REG1, &status, 1);
+        sprintf(string, "CTRL REG1: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_CTRL_REG5, &status, 1);
+        sprintf(string, "CTRL REG5: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_CTRL_REG4, &status, 1);
+        sprintf(string, "CTRL REG4: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_SYSMOD, &status, 1);
+        sprintf(string, "SYSMOD: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_INT_SOURCE, &status, 1);
+        sprintf(string, "INT SOURCE: 0x%02X\n\r", status);
+        put(string);
+        
+        i2c_read(FXOS8700CQ_STATUS, &status, 1);
+        sprintf(string, "STATUS: 0x%02X\n\r", status);
+        put(string);
+      }
       Blue_LED(LED_TOGGLE);
     }/*
     else if(SW2_pressed())
@@ -65,18 +117,6 @@ int main(void)
     }*/
   }
   return 0;
-}
-
-/**
- * Waits for a delay (in milliseconds)
- * 
- * del - The delay in milliseconds
- */
-void delay(int del){
-	int i;
-	for (i=0; i<del*50000; i++){
-		// Do nothing
-	}
 }
 
 void initialize()

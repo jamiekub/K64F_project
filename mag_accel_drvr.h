@@ -3,6 +3,7 @@
 
 #include "MK64F12.h"
 #define FXOS8700CQ_SLAVE_ADDR 0x1D
+#define FXOS8700CQ_RST 0x40
 #define FXOS8700CQ_BAUD 100000 // default speed (use 400000 for fast mode)
 #define FXOS8700CQ_ICR 0x10  // I2C baud rate = I2C module clock speed (Hz)/(mul × SCL divider)
                              // SDA hold time = I2C module clock period (s) × mul × SDA hold value
@@ -15,7 +16,7 @@
                              // SCL stop hold time = 0.6 us (min)
 
                              // For ~100 kbit/s mul = 00 and ICR = 0x21
-                             // For ~200 kbit/s mul = 01 and ICR = 0x10
+                             // For ~200 kbit/s mul = 01 and ICR = 0x50
                              // For ~400 kbit/s mul = 00 and ICR = 0x10
                              // See Table 51-54 in K64 reference manual
 
@@ -57,10 +58,10 @@
 #define FXOS8700CQ_PULSE_WIND       0x28
 #define FXOS8700CQ_ASLP_COUNT       0x29
 #define FXOS8700CQ_CTRL_REG1        0x2A
-#define FXOS8700CQ_CRTL_REG2        0x2B
+#define FXOS8700CQ_CTRL_REG2        0x2B
 #define FXOS8700CQ_CTRL_REG3        0x2C
 #define FXOS8700CQ_CTRL_REG4        0x2D
-#define FXOS8700CQ_CRTL_REG5        0x2E
+#define FXOS8700CQ_CTRL_REG5        0x2E
 #define FXOS8700CQ_OFF_X            0x2F
 #define FXOS8700CQ_OFF_Y            0x30
 #define FXOS8700CQ_OFF_Z            0x31
@@ -144,7 +145,13 @@ typedef struct
 } SRAWDATA;
 
 int FXOS8700CQ_init(void);
+void FXOS8700CQ_rst(void);
 uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData);
 int whoami(void);
-
+void i2c_write(uint8_t* buffer, uint32_t buf_size);
+void i2c_read(uint8_t reg_addr, uint8_t* buffer, uint32_t buf_size);
+void delay(int del);
+  
+//Global data valid flag
+extern uint8_t DataReady;
 #endif
