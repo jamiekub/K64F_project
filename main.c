@@ -14,6 +14,8 @@
 #define DEFAULT_SYSTEM_CLOCK 20485760u
 #endif
 
+#define DEBUG 0
+
 void initialize(void);
 void en_interrupts(void);
 
@@ -21,10 +23,12 @@ int main(void)
 {  
   char string[255];
   uint8_t status;
-  SRAWDATA accel_data;
-  SRAWDATA mag_data;
-  
-	initialize();
+  SRAWDATA accel_data_raw;
+  SRAWDATA mag_data_raw;
+  SDATA accel_data;
+  SDATA mag_data;
+
+  initialize();
   
   for(;;)
   {
@@ -35,17 +39,39 @@ int main(void)
       Blue_LED(LED_TOGGLE);
       DataReady = 0;
       
-      status = ReadAccelMagnData(&accel_data, &mag_data);
+      status = ReadAccelMagnData(&accel_data_raw, &mag_data_raw);
+
+#if DEBUG      
       sprintf(string, "Status: 0x%02X\n\r", status);
       put(string);
-      sprintf(string, "RAW Accelerometer Data: x:%d, y:%d, z:%d\n\r", accel_data.x, accel_data.y, accel_data.z);
+      sprintf(string, "RAW Accelerometer Data: x:%d, y:%d, z:%d\n\r", accel_data_raw.x, accel_data_raw.y, accel_data_raw.z);
       put(string);
-      sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data.x, mag_data.y, mag_data.z);
+      sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data_raw.x, mag_data_raw.y, mag_data_raw.z);
       put(string);
+#endif
+
+      ConvertAccelMagnData(&accel_data_raw, &mag_data_raw, &accel_data, &mag_data);
+      
+      sprintf(string, "Accelerometer Data (mg): x:%f, y:%f, z:%f\n\r", accel_data.x, accel_data.y, accel_data.z);
+      put(string);
+      sprintf(string, "Magnetometer Data (uT): x:%f, y:%f, z:%f\n\r", mag_data.x, mag_data.y, mag_data.z);
+      put(string);
+      
       Blue_LED(LED_TOGGLE);
       Green_LED(LED_ON);
       
-      FXOS8700CQ_init();
+      //FXOS8700CQ_init(); // This is wrong!
+      /* Re-initializing the sensor "fixed" the issue with not receiving interrupts consistently.
+      However, I now believe that the issue is caused by my i2c driver.
+      The interrupt works correctly after initialization and I get valid data.
+      Then a second interrupt is received, but the data is incorrect.
+      After this, no more interrupts are received.
+      
+      I think the issue is that the auto-increment register address mechanism in the sensor 
+      is not resetting after the initial data read. Then when we get a second interrupt,
+      we read the wrong registers and so the data ready flag is not cleared.
+      This means no more interrupts are sent, and further attempts to read data fail.
+      Also, the data might be all 0xFF because it's just reading the status register 13 times.*/
     }
     
     if(SW3_pressed())
@@ -104,12 +130,12 @@ int main(void)
         sprintf(string, "STATUS: 0x%02X\n\r", status);
         put(string);
         
-        status = ReadAccelMagnData(&accel_data, &mag_data);
+        status = ReadAccelMagnData(&accel_data_raw, &mag_data_raw);
         sprintf(string, "Status: 0x%02X\n\r", status);
         put(string);
-        sprintf(string, "RAW Accelerometer Data: x:%d, y:%d, z:%d\n\r", accel_data.x, accel_data.y, accel_data.z);
+        sprintf(string, "RAW Accelerometer Data: x:%d, y:%d, z:%d\n\r", accel_data_raw.x, accel_data_raw.y, accel_data_raw.z);
         put(string);
-        sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data.x, mag_data.y, mag_data.z);
+        sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data_raw.x, mag_data_raw.y, mag_data_raw.z);
         put(string);
       }
       Blue_LED(LED_TOGGLE);

@@ -19,7 +19,6 @@
                              // For ~200 kbit/s mul = 01 and ICR = 0x50
                              // For ~400 kbit/s mul = 00 and ICR = 0x10
                              // See Table 51-54 in K64 reference manual
-
 /* FXOS8700CQ Register addresses (See FXOS8700CQ documentation for details) */
 #define FXOS8700CQ_STATUS           0x00
 #define FXOS8700CQ_OUT_X_MSB        0x01
@@ -144,9 +143,17 @@ typedef struct
   int16_t z;
 } SRAWDATA;
 
+typedef struct
+{
+  float x;
+  float y;
+  float z;
+} SDATA;
+
 int FXOS8700CQ_init(void);
 void FXOS8700CQ_rst(void);
 uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData);
+void ConvertAccelMagnData(SRAWDATA *accel_raw, SRAWDATA *magn_raw, SDATA *accel_data, SDATA *magn_data);
 int whoami(void);
 void i2c_write(uint8_t* buffer, uint32_t buf_size);
 void i2c_read(uint8_t reg_addr, uint8_t* buffer, uint32_t buf_size);

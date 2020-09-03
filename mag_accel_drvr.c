@@ -119,7 +119,24 @@ uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData)
   memset(I2C_buffer, 0, I2C_BUFF_SIZE);
 
   //Read status and accel/mag data in burst (this works when in hybrid mode only)
-  i2c_read(FXOS8700CQ_STATUS, I2C_buffer, 13);
+  //i2c_read(FXOS8700CQ_STATUS, I2C_buffer, 13);
+  
+  //Temporary fix for burst read issue
+  i2c_read(FXOS8700CQ_STATUS, I2C_buffer, 1);
+
+  i2c_read(FXOS8700CQ_OUT_X_MSB, &I2C_buffer[1], 1);
+  i2c_read(FXOS8700CQ_OUT_X_LSB, &I2C_buffer[2], 1);
+  i2c_read(FXOS8700CQ_OUT_Y_MSB, &I2C_buffer[3], 1);
+  i2c_read(FXOS8700CQ_OUT_Y_LSB, &I2C_buffer[4], 1);
+  i2c_read(FXOS8700CQ_OUT_Z_MSB, &I2C_buffer[5], 1);
+  i2c_read(FXOS8700CQ_OUT_Z_LSB, &I2C_buffer[6], 1);
+  
+  i2c_read(FXOS8700CQ_M_OUT_X_MSB, &I2C_buffer[7], 1);
+  i2c_read(FXOS8700CQ_M_OUT_X_LSB, &I2C_buffer[8], 1);
+  i2c_read(FXOS8700CQ_M_OUT_Y_MSB, &I2C_buffer[9], 1);
+  i2c_read(FXOS8700CQ_M_OUT_Y_LSB, &I2C_buffer[10], 1);
+  i2c_read(FXOS8700CQ_M_OUT_Z_MSB, &I2C_buffer[11], 1);
+  i2c_read(FXOS8700CQ_M_OUT_Z_LSB, &I2C_buffer[12], 1);
   
   //Copy 14 bit accel data to struct
   pAccelData->x = (int16_t)(((I2C_buffer[1] << 8) | I2C_buffer[2])) >> 2;
@@ -132,6 +149,19 @@ uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData)
   pMagnData->z = (int16_t)((I2C_buffer[11] << 8) | I2C_buffer[12]);
   
   return I2C_buffer[0];
+}
+
+void ConvertAccelMagnData(SRAWDATA *accel_raw, SRAWDATA *magn_raw, SDATA *accel_data, SDATA *magn_data)
+{
+  //Convert accel data to mg
+  accel_data->x = ((float) accel_raw->x) * 0.488;
+  accel_data->y = ((float) accel_raw->y) * 0.488;
+  accel_data->z = ((float) accel_raw->z) * 0.488;
+  
+  //Convert magn data to uT
+  magn_data->x = ((float) magn_raw->x) * 0.1;
+  magn_data->y = ((float) magn_raw->y) * 0.1;
+  magn_data->z = ((float) magn_raw->z) * 0.1;
 }
 
 int whoami()
