@@ -198,4 +198,7 @@ void i2c_txrx(uint8_t slave_addr, uint8_t* txbuffer, uint32_t txbuf_size, uint8_
     
     rxbuffer[idx++] = I2C0_D;
   }
+
+  //Return to idle state
+  I2C0_C1 = 0x80;
 }

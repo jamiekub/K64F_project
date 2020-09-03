@@ -154,8 +154,10 @@ int FXOS8700CQ_init(void);
 void FXOS8700CQ_rst(void);
 uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData);
 void ConvertAccelMagnData(SRAWDATA *accel_raw, SRAWDATA *magn_raw, SDATA *accel_data, SDATA *magn_data);
+void CalibrateAccel(void);
 int whoami(void);
-void i2c_write(uint8_t* buffer, uint32_t buf_size);
+void i2c_write_multi(uint8_t* buffer, uint32_t buf_size);
+void i2c_write_single(uint8_t reg_addr, uint8_t data);
 void i2c_read(uint8_t reg_addr, uint8_t* buffer, uint32_t buf_size);
 void delay(int del);
 

@@ -35,8 +35,6 @@ int main(void)
     //i2c_read(FXOS8700CQ_INT_SOURCE, &status, 1);
     if(DataReady == 1 )//|| status == 0x01)
     {
-      Green_LED(LED_OFF);
-      Blue_LED(LED_TOGGLE);
       DataReady = 0;
       
       status = ReadAccelMagnData(&accel_data_raw, &mag_data_raw);
@@ -48,30 +46,25 @@ int main(void)
       put(string);
       sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data_raw.x, mag_data_raw.y, mag_data_raw.z);
       put(string);
-#endif
-
+#else
+      if(status == 0xFF)
+      {
+        Red_LED(LED_ON);
+        Green_LED(LED_OFF);
+      }
+      else
+      {
+        Red_LED(LED_OFF);
+        Green_LED(LED_ON);
+      }
+      
       ConvertAccelMagnData(&accel_data_raw, &mag_data_raw, &accel_data, &mag_data);
       
-      sprintf(string, "Accelerometer Data (mg): x:%f, y:%f, z:%f\n\r", accel_data.x, accel_data.y, accel_data.z);
+      sprintf(string, "Accelerometer Data (mg): x:%f, y:%f, z:%f", accel_data.x, accel_data.y, accel_data.z);
       put(string);
-      sprintf(string, "Magnetometer Data (uT): x:%f, y:%f, z:%f\n\r", mag_data.x, mag_data.y, mag_data.z);
+      sprintf(string, "\tMagnetometer Data (uT): x:%f, y:%f, z:%f\n\r", mag_data.x, mag_data.y, mag_data.z);
       put(string);
-      
-      Blue_LED(LED_TOGGLE);
-      Green_LED(LED_ON);
-      
-      //FXOS8700CQ_init(); // This is wrong!
-      /* Re-initializing the sensor "fixed" the issue with not receiving interrupts consistently.
-      However, I now believe that the issue is caused by my i2c driver.
-      The interrupt works correctly after initialization and I get valid data.
-      Then a second interrupt is received, but the data is incorrect.
-      After this, no more interrupts are received.
-      
-      I think the issue is that the auto-increment register address mechanism in the sensor 
-      is not resetting after the initial data read. Then when we get a second interrupt,
-      we read the wrong registers and so the data ready flag is not cleared.
-      This means no more interrupts are sent, and further attempts to read data fail.
-      Also, the data might be all 0xFF because it's just reading the status register 13 times.*/
+#endif  
     }
     
     if(SW3_pressed())
@@ -171,6 +164,8 @@ void initialize()
   {
 	  //put("I2C initialization success! :)\n\r");
     Green_LED(LED_ON);
-    
+    put("Press a key to begin accelerometer calibration.\n\r");
+    uart_getchar();
+    CalibrateAccel();
   }
 }
