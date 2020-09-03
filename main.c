@@ -14,6 +14,7 @@
 #define DEFAULT_SYSTEM_CLOCK 20485760u
 #endif
 
+#define DEBUG_RAW 0
 #define DEBUG 0
 
 void initialize(void);
@@ -39,25 +40,42 @@ int main(void)
       
       status = ReadAccelMagnData(&accel_data_raw, &mag_data_raw);
 
-#if DEBUG      
+#if DEBUG_RAW    
       sprintf(string, "Status: 0x%02X\n\r", status);
       put(string);
       sprintf(string, "RAW Accelerometer Data: x:%d, y:%d, z:%d\n\r", accel_data_raw.x, accel_data_raw.y, accel_data_raw.z);
       put(string);
       sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data_raw.x, mag_data_raw.y, mag_data_raw.z);
       put(string);
-#else
+#endif
+      
       if(status == 0xFF)
       {
         Red_LED(LED_ON);
-        Green_LED(LED_OFF);
+        Blue_LED(LED_OFF);
       }
       else
       {
         Red_LED(LED_OFF);
-        Green_LED(LED_ON);
+        Blue_LED(LED_ON);
       }
       
+      sprintf(string, "%d\n", accel_data_raw.x);
+      put(string);
+      sprintf(string, "%d\n", accel_data_raw.y);
+      put(string);
+      sprintf(string, "%d\n", accel_data_raw.z);
+      put(string);
+      sprintf(string, "%d\n", mag_data_raw.x);
+      put(string);
+      sprintf(string, "%d\n", mag_data_raw.y);
+      put(string);
+      sprintf(string, "%d\n", mag_data_raw.z);
+      put(string);
+ //     sprintf(string, "%d%d%d%d%d%d", accel_data_raw.x, accel_data_raw.y, accel_data_raw.z,
+ //                                     mag_data_raw.x, mag_data_raw.y, mag_data_raw.z);
+ //     put(string);
+#if DEBUG
       ConvertAccelMagnData(&accel_data_raw, &mag_data_raw, &accel_data, &mag_data);
       
       sprintf(string, "Accelerometer Data (mg): x:%f, y:%f, z:%f", accel_data.x, accel_data.y, accel_data.z);
@@ -164,8 +182,9 @@ void initialize()
   {
 	  //put("I2C initialization success! :)\n\r");
     Green_LED(LED_ON);
-    put("Press a key to begin accelerometer calibration.\n\r");
-    uart_getchar();
+    delay(500);
+   // put("Press a key to begin accelerometer calibration.\n\r");
+    //uart_getchar();
     CalibrateAccel();
   }
 }
