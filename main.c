@@ -59,28 +59,28 @@ int main(void)
         Red_LED(LED_OFF);
         Blue_LED(LED_ON);
       }
-      
-      sprintf(string, "%d\n", accel_data_raw.x);
-      put(string);
-      sprintf(string, "%d\n", accel_data_raw.y);
-      put(string);
-      sprintf(string, "%d\n", accel_data_raw.z);
-      put(string);
-      sprintf(string, "%d\n", mag_data_raw.x);
-      put(string);
-      sprintf(string, "%d\n", mag_data_raw.y);
-      put(string);
-      sprintf(string, "%d\n", mag_data_raw.z);
-      put(string);
- //     sprintf(string, "%d%d%d%d%d%d", accel_data_raw.x, accel_data_raw.y, accel_data_raw.z,
- //                                     mag_data_raw.x, mag_data_raw.y, mag_data_raw.z);
- //     put(string);
+
 #if DEBUG
       ConvertAccelMagnData(&accel_data_raw, &mag_data_raw, &accel_data, &mag_data);
       
       sprintf(string, "Accelerometer Data (mg): x:%f, y:%f, z:%f", accel_data.x, accel_data.y, accel_data.z);
       put(string);
       sprintf(string, "\tMagnetometer Data (uT): x:%f, y:%f, z:%f\n\r", mag_data.x, mag_data.y, mag_data.z);
+      put(string);
+#else
+      ConvertAccelMagnData(&accel_data_raw, &mag_data_raw, &accel_data, &mag_data);
+      
+      sprintf(string, "%f\n", accel_data.x);
+      put(string);
+      sprintf(string, "%f\n", accel_data.y);
+      put(string);
+      sprintf(string, "%f\n", accel_data.z);
+      put(string);
+      sprintf(string, "%f\n", mag_data.x);
+      put(string);
+      sprintf(string, "%f\n", mag_data.y);
+      put(string);
+      sprintf(string, "%f\n", mag_data.z);
       put(string);
 #endif  
     }
