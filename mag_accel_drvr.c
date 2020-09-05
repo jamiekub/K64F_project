@@ -150,13 +150,58 @@ void CalibrateAccel()
   
   x_off = accel.x / 4 * -1;
   y_off = accel.y / 4 * -1;
-  z_off = (0.488 - accel.z) / 4 ;
+  z_off = 2049 - (accel.z / 4);
   
   i2c_write_single(FXOS8700CQ_OFF_X, x_off);
   i2c_write_single(FXOS8700CQ_OFF_Y, y_off);
   i2c_write_single(FXOS8700CQ_OFF_Z, z_off);
   
   i2c_write_single(FXOS8700CQ_CTRL_REG1, 0x2D);
+}
+
+/**
+  Calibration involves gathering min/max values for each axis and
+  finging the average so that an offset can be calculated to center data around 0
+  
+  For now, I'll use experimentally determined values I found previously,
+  but in the future, values should be found at the start of each run, 
+  or calculated on the fly for runtime calibration
+*/
+void CalibrateMagn()
+{
+  int16_t max_x, max_y, max_z;
+  int16_t min_x, min_y, min_z;
+  int16_t avg_x, avg_y, avg_z;
+  
+  //Experimental min/max values rounded to nearest uT
+  //DO NOT use these unless you're sitting at my desk
+  max_x = 113 * 10;
+  max_y = 58 * 10;
+  max_x = 70 * 10;
+  
+  min_x = 15 * 10;
+  min_x = -48 * 10;
+  min_x = -26 * 10;
+  
+  avg_x = (max_x + min_x) / 2;
+  avg_y = (max_y + min_y) / 2;
+  avg_z = (max_z + min_z) / 2;
+
+  I2C_buffer[0] = FXOS8700CQ_M_OFF_X_MSB;
+  I2C_buffer[1] = (int8_t)((avg_x >> 7) & 0xFF);
+  I2C_buffer[2] = (int8_t)((avg_x << 1) & 0xFF);
+  I2C_buffer[3] = (int8_t)((avg_y >> 7) & 0xFF);
+  I2C_buffer[4] = (int8_t)((avg_y << 1) & 0xFF);
+  I2C_buffer[5] = (int8_t)((avg_z >> 7) & 0xFF);
+  I2C_buffer[6] = (int8_t)((avg_z << 1) & 0xFF);
+  i2c_write_multi(I2C_buffer, 6);
+  
+  //i2c_write_single(FXOS8700CQ_M_OFF_X_MSB, (int8_t)((avg_x >> 7) & 0xFF));
+  //i2c_write_single(FXOS8700CQ_M_OFF_X_LSB, (int8_t)((avg_x << 1) & 0xFF));
+  //i2c_write_single(FXOS8700CQ_M_OFF_Y_MSB, (int8_t)((avg_y >> 7) & 0xFF));
+  //i2c_write_single(FXOS8700CQ_M_OFF_Y_LSB, (int8_t)((avg_y << 1) & 0xFF));
+  //i2c_write_single(FXOS8700CQ_M_OFF_Z_MSB, (int8_t)((avg_z >> 7) & 0xFF));
+  //i2c_write_single(FXOS8700CQ_M_OFF_Z_LSB, (int8_t)((avg_z << 1) & 0xFF));
 }
 
 int whoami()

@@ -22,7 +22,7 @@ for n = 1 : sample
 %read data from sensors
 %data rate = 6.25 Hz
 %Make sure blue LED is on, or else we're losing data
-ax = str2double(fgetl(serialPort));
+ax = str2double(fgetl(serialPort))
 ay = str2double(fgetl(serialPort));
 az = str2double(fgetl(serialPort));
 mx = str2double(fgetl(serialPort));
@@ -35,7 +35,7 @@ accel_z(n) = az;
 magn_x(n) = mx;
 magn_y(n) = my;
 magn_z(n) = mz;
-n
+
 end
 fclose(serialPort);
 
@@ -45,10 +45,19 @@ figure
 histogram(accel_y);
 figure
 histogram(accel_z);
-figure
 
+figure
 histogram(magn_x);
 figure
 histogram(magn_y);
 figure
 histogram(magn_z);
+
+figure
+scatter(magn_x, magn_y, [], ones(1, sample));
+hold on
+scatter(magn_x, magn_z, [], 2*ones(1, sample));
+hold on
+scatter(magn_y, magn_z, [], 3*ones(1, sample));
+legend('XY', 'XZ', 'YZ')
+axis equal

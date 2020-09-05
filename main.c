@@ -186,5 +186,6 @@ void initialize()
    // put("Press a key to begin accelerometer calibration.\n\r");
     //uart_getchar();
     CalibrateAccel();
+    CalibrateMagn();
   }
 }
