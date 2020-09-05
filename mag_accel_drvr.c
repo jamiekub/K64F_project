@@ -33,13 +33,13 @@ int FXOS8700CQ_init()
   }
   while(I2C_buffer[0] != 0x00);
   
-  // write 0001 1111 = 0x1F to magnetometer control register 1
-  // [7]: m_acal=0: auto calibration disabled
+  // write 1001 1111 = 0x9F to magnetometer control register 1
+  // [7]: m_acal=1: auto calibration enabled (works pretty well actually)
   // [6]: m_rst=0: no one-shot magnetic reset
   // [5]: m_ost=0: no one-shot magnetic measurement
   // [4-2]: m_os=111=7: 8x oversampling (for 200Hz) to reduce magnetometer noise
   // [1-0]: m_hms=11=3: select hybrid mode with accel and magnetometer active
-  i2c_write_single(FXOS8700CQ_M_CTRL_REG1, 0x1F);
+  i2c_write_single(FXOS8700CQ_M_CTRL_REG1, 0x9F);
   
   // write 0010 0000 = 0x20 to magnetometer control register 2
   // [7]: reserved
@@ -195,13 +195,6 @@ void CalibrateMagn()
   I2C_buffer[5] = (int8_t)((avg_z >> 7) & 0xFF);
   I2C_buffer[6] = (int8_t)((avg_z << 1) & 0xFF);
   i2c_write_multi(I2C_buffer, 6);
-  
-  //i2c_write_single(FXOS8700CQ_M_OFF_X_MSB, (int8_t)((avg_x >> 7) & 0xFF));
-  //i2c_write_single(FXOS8700CQ_M_OFF_X_LSB, (int8_t)((avg_x << 1) & 0xFF));
-  //i2c_write_single(FXOS8700CQ_M_OFF_Y_MSB, (int8_t)((avg_y >> 7) & 0xFF));
-  //i2c_write_single(FXOS8700CQ_M_OFF_Y_LSB, (int8_t)((avg_y << 1) & 0xFF));
-  //i2c_write_single(FXOS8700CQ_M_OFF_Z_MSB, (int8_t)((avg_z >> 7) & 0xFF));
-  //i2c_write_single(FXOS8700CQ_M_OFF_Z_LSB, (int8_t)((avg_z << 1) & 0xFF));
 }
 
 int whoami()
