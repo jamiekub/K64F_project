@@ -15,7 +15,7 @@
 #endif
 
 #define DEBUG_RAW 0
-#define DEBUG 0
+#define DEBUG 1
 
 void initialize(void);
 void en_interrupts(void);
@@ -87,7 +87,7 @@ int main(void)
     
     if(SW3_pressed())
     {
-      Blue_LED(LED_TOGGLE);
+      Blue_LED(LED_OFF);
       Red_LED(LED_OFF);
       Green_LED(LED_OFF);
       if(whoami() == 1)
@@ -97,6 +97,7 @@ int main(void)
       else
       {
         Green_LED(LED_ON);
+#if DEBUG_RAW
         i2c_read(FXOS8700CQ_M_CTRL_REG1, &status, 1);
         sprintf(string, "M CTRL REG1: 0x%02X\n\r", status);
         put(string);
@@ -148,18 +149,11 @@ int main(void)
         put(string);
         sprintf(string, "RAW Magnetometer Data: x:%d, y:%d, z:%d\n\r", mag_data_raw.x, mag_data_raw.y, mag_data_raw.z);
         put(string);
+#endif
+
+        CalibrateAccel();
       }
-      Blue_LED(LED_TOGGLE);
-    }/*
-    else if(SW2_pressed())
-    {
-      Blue_LED(LED_TOGGLE);
-      Green_LED(LED_ON);
-      put("SW2 Pressed!\n\r");
-      delay(50);
-      Green_LED(LED_OFF);
-      Blue_LED(LED_TOGGLE);
-    }*/
+    }
   }
   return 0;
 }
@@ -175,17 +169,28 @@ void initialize()
   FXOS8700CQ_INT_init();
   if(FXOS8700CQ_init() == 1)
   {
-    //put("I2C initialization failure! :(\n\r");
+#if DEBUG
+    put("I2C initialization failure! :(\n\r");
+#endif
     Red_LED(LED_ON);
   }
   else
   {
-	  //put("I2C initialization success! :)\n\r");
+#if DEBUG
+	  put("I2C initialization success! :)\n\r");
+#endif
     Green_LED(LED_ON);
-    delay(500);
-   // put("Press a key to begin accelerometer calibration.\n\r");
-    //uart_getchar();
     CalibrateAccel();
-    //CalibrateMagn();
+    Red_LED(LED_ON);
+    Blue_LED(LED_ON);
+    /* Calibrate Magnetometer at this time */
+    //CalibrateMagn(); Use auto calibration instead
+#if DEBUG
+    put("Press a key to end magnetometer calibration.\n\r");
+#endif
+    uart_getchar();
+    Green_LED(LED_OFF);
+    Red_LED(LED_OFF);
+    Blue_LED(LED_OFF);
   }
 }

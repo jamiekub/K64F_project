@@ -145,9 +145,9 @@ typedef struct
 
 typedef struct
 {
-  float x;
-  float y;
-  float z;
+  double x;
+  double y;
+  double z;
 } SDATA;
 
 int FXOS8700CQ_init(void);

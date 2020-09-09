@@ -5,7 +5,7 @@ clc
 % Clear any existing serial ports
 delete(instrfind);
 
-sample = 1000;
+sample = 10000;
 
 accel_x = zeros(1, sample);
 accel_y = zeros(1, sample);
@@ -18,11 +18,13 @@ magn_z = zeros(1, sample);
 serialPort = serial('COM4', 'BaudRate', 9600, 'DataBits', 8, 'Parity', 'none', 'StopBit', 1);
 fopen(serialPort);
 
+fwrite(serialPort, 'a', 'char', 'async');
+
 for n = 1 : sample
 %read data from sensors
 %data rate = 6.25 Hz
 %Make sure blue LED is on, or else we're losing data
-ax = str2double(fgetl(serialPort))
+ax = str2double(fgetl(serialPort));
 ay = str2double(fgetl(serialPort));
 az = str2double(fgetl(serialPort));
 mx = str2double(fgetl(serialPort));
@@ -35,6 +37,10 @@ accel_z(n) = az;
 magn_x(n) = mx;
 magn_y(n) = my;
 magn_z(n) = mz;
+
+phi = atan2d(ay, az)
+theta = atand(-ax / (ay * sin(phi) + az * cos(phi)))
+psi = atan2d((mz * sin(phi) - my * cos(phi)), (mx * cos(theta) + my * sin(theta) * sin(phi) + mz * sin(theta) * cos(theta)))
 
 end
 fclose(serialPort);
@@ -61,3 +67,4 @@ hold on
 scatter(magn_y, magn_z, [], 3*ones(1, sample));
 legend('XY', 'XZ', 'YZ')
 axis equal
+

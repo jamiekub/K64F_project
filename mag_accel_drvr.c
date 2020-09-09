@@ -121,24 +121,45 @@ uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData)
 void ConvertAccelMagnData(SRAWDATA *accel_raw, SRAWDATA *magn_raw, SDATA *accel_data, SDATA *magn_data)
 {
   //Convert accel data to mg
-  accel_data->x = ((float) accel_raw->x) * 0.488;
-  accel_data->y = ((float) accel_raw->y) * 0.488;
-  accel_data->z = ((float) accel_raw->z) * 0.488;
+  accel_data->x = ((double) accel_raw->x) * 0.488;
+  accel_data->y = ((double) accel_raw->y) * 0.488;
+  accel_data->z = ((double) accel_raw->z) * 0.488;
   
   //Convert magn data to uT
-  magn_data->x = ((float) magn_raw->x) * 0.1;
-  magn_data->y = ((float) magn_raw->y) * 0.1;
-  magn_data->z = ((float) magn_raw->z) * 0.1;
+  magn_data->x = ((double) magn_raw->x) * 0.1;
+  magn_data->y = ((double) magn_raw->y) * 0.1;
+  magn_data->z = ((double) magn_raw->z) * 0.1;
+}
+
+void ComputeYPR(SDATA *Gs, SDATA *Bs, SDATA *Ypr)
+{
+
 }
 
 void CalibrateAccel()
 {
   SRAWDATA accel;
-  int8_t x_off, y_off, z_off;
+  int8_t x_off = 0;
+  int8_t y_off = 0;
+  int8_t z_off = 0;
   
+  // Go into standby mode
+  i2c_write_single(FXOS8700CQ_CTRL_REG1, 0x00);
+  
+  // Clear current offset values
+  i2c_write_single(FXOS8700CQ_OFF_X, x_off);
+  i2c_write_single(FXOS8700CQ_OFF_Y, y_off);
+  i2c_write_single(FXOS8700CQ_OFF_Z, z_off);
+  
+  // Active mode
+  i2c_write_single(FXOS8700CQ_CTRL_REG1, 0x2D);
+  
+  // wait a bit 
+  delay(500);
   while(!DataReady);
   DataReady = 0;
   
+  // Back to standby
   i2c_write_single(FXOS8700CQ_CTRL_REG1, 0x00);
   
   i2c_read(FXOS8700CQ_OUT_X_MSB, I2C_buffer, 12);
@@ -156,6 +177,7 @@ void CalibrateAccel()
   i2c_write_single(FXOS8700CQ_OFF_Y, y_off);
   i2c_write_single(FXOS8700CQ_OFF_Z, z_off);
   
+  // Back to active
   i2c_write_single(FXOS8700CQ_CTRL_REG1, 0x2D);
 }
 
@@ -244,8 +266,6 @@ void i2c_write_multi(uint8_t* buffer, uint32_t buf_size)
 
 void FXOS8700CQ_rst()
 {
-  uint32_t idx = 0;
-  
   //Wait for bus to be free
   while(I2C0_S & I2C_S_BUSY_MASK);
   

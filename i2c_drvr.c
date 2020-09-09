@@ -97,7 +97,7 @@ void i2c_rx(uint8_t slave_addr, uint8_t* buffer, uint32_t buf_size)
     I2C0_C1 |= I2C_C1_TXAK_MASK;
   }
   dummy_read = I2C0_D;
-  
+  (void)dummy_read;
   while(buf_size > idx)
   {
     //Wait for transfer to complete
@@ -174,6 +174,7 @@ void i2c_txrx(uint8_t slave_addr, uint8_t* txbuffer, uint32_t txbuf_size, uint8_
     I2C0_C1 |= I2C_C1_TXAK_MASK;
   }
   dummy_read = I2C0_D;
+  (void)dummy_read;
   idx = 0;
   
   while(rxbuf_size > idx)
