@@ -15,7 +15,7 @@
 #endif
 
 #define DEBUG_RAW 0
-#define DEBUG 1
+#define DEBUG 0
 
 void initialize(void);
 void en_interrupts(void);
@@ -28,6 +28,7 @@ int main(void)
   SRAWDATA mag_data_raw;
   SDATA accel_data;
   SDATA mag_data;
+  SDATA rpy_data;
 
   initialize();
   
@@ -62,10 +63,13 @@ int main(void)
 
 #if DEBUG
       ConvertAccelMagnData(&accel_data_raw, &mag_data_raw, &accel_data, &mag_data);
+      ComputeRpy(&accel_data, &mag_data, &rpy_data);
       
-      sprintf(string, "Accelerometer Data (mg): x:%f, y:%f, z:%f", accel_data.x, accel_data.y, accel_data.z);
+      sprintf(string, "Accel (mg): x:%f, y:%f, z:%f", accel_data.x, accel_data.y, accel_data.z);
       put(string);
-      sprintf(string, "\tMagnetometer Data (uT): x:%f, y:%f, z:%f\n\r", mag_data.x, mag_data.y, mag_data.z);
+      sprintf(string, "\tMagn (uT): x:%f, y:%f, z:%f", mag_data.x, mag_data.y, mag_data.z);
+      put(string);
+      sprintf(string, "\tRpy (deg): x:%f, y:%f, z:%f\n\r", rpy_data.x, rpy_data.y, rpy_data.z);
       put(string);
 #else
       ConvertAccelMagnData(&accel_data_raw, &mag_data_raw, &accel_data, &mag_data);

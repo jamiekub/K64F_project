@@ -156,6 +156,8 @@ uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData);
 void ConvertAccelMagnData(SRAWDATA *accel_raw, SRAWDATA *magn_raw, SDATA *accel_data, SDATA *magn_data);
 void CalibrateAccel(void);
 void CalibrateMagn(void);
+double rad2deg(double ang);
+void ComputeRpy(SDATA *Gs, SDATA *Bs, SDATA *Rpy);
 int whoami(void);
 void i2c_write_multi(uint8_t* buffer, uint32_t buf_size);
 void i2c_write_single(uint8_t reg_addr, uint8_t data);

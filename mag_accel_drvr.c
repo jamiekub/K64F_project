@@ -2,6 +2,8 @@
 #include "MK64F12.h"
 #include "i2c_drvr.h"
 #include "mag_accel_drvr.h"
+#include "math.h"
+#define PI 3.1415926
 #define SYS_CLOCK 20485760 //default system clock (see DEFAULT_SYSTEM_CLOCK  in system_MK64F12.c)
 #define I2C_BUFF_SIZE 64
 
@@ -131,9 +133,21 @@ void ConvertAccelMagnData(SRAWDATA *accel_raw, SRAWDATA *magn_raw, SDATA *accel_
   magn_data->z = ((double) magn_raw->z) * 0.1;
 }
 
-void ComputeYPR(SDATA *Gs, SDATA *Bs, SDATA *Ypr)
+void ComputeRpy(SDATA *Gs, SDATA *Bs, SDATA *Rpy)
 {
+  Rpy->x = atan2(Gs->y, Gs->z);
+  Rpy->y = atan((-1*Gs->x)/(Gs->y * sin(Rpy->x) + Gs->z * cos(Rpy->x)));
+  Rpy->z = atan2((Bs->z * sin(Rpy->x) - Bs->y * cos(Rpy->x)),
+                 (Bs->x * cos(Rpy->y) + Bs->y * sin(Rpy->y) * sin(Rpy->x) + Bs->z * sin(Rpy->y) * cos(Rpy->x)));
+  
+  Rpy->x = rad2deg(Rpy->x);
+  Rpy->y = rad2deg(Rpy->y);
+  Rpy->z = rad2deg(Rpy->z);
+}
 
+double rad2deg(double ang)
+{
+  return 180/PI * ang;
 }
 
 void CalibrateAccel()
