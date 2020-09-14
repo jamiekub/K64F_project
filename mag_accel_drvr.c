@@ -6,6 +6,7 @@
 #define PI 3.1415926
 #define SYS_CLOCK 20485760 //default system clock (see DEFAULT_SYSTEM_CLOCK  in system_MK64F12.c)
 #define I2C_BUFF_SIZE 64
+#define ACTIVE_MODE 0x15
 
 //Global buffer for i2c data
 uint8_t I2C_buffer[I2C_BUFF_SIZE];
@@ -94,7 +95,7 @@ int FXOS8700CQ_init()
   // [2]: lnoise=1 for low noise mode
   // [1]: f_read=0 for normal 16 bit reads
   // [0]: active=1 to take the part out of standby and enable sampling
-  i2c_write_single(FXOS8700CQ_CTRL_REG1, 0x2D);
+  i2c_write_single(FXOS8700CQ_CTRL_REG1, ACTIVE_MODE);
   
   return 0;
 }
@@ -166,7 +167,7 @@ void CalibrateAccel()
   i2c_write_single(FXOS8700CQ_OFF_Z, z_off);
   
   // Active mode
-  i2c_write_single(FXOS8700CQ_CTRL_REG1, 0x2D);
+  i2c_write_single(FXOS8700CQ_CTRL_REG1, ACTIVE_MODE);
   
   // wait a bit 
   delay(500);
@@ -192,7 +193,7 @@ void CalibrateAccel()
   i2c_write_single(FXOS8700CQ_OFF_Z, z_off);
   
   // Back to active
-  i2c_write_single(FXOS8700CQ_CTRL_REG1, 0x2D);
+  i2c_write_single(FXOS8700CQ_CTRL_REG1, ACTIVE_MODE);
 }
 
 /**

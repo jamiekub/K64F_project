@@ -8,7 +8,7 @@
 
 #include "MK64F12.h"
 #include "uart_drvr.h"
-#define BAUD_RATE 9600      //default baud rate 
+#define BAUD_RATE 256000   //default baud rate 
 #define SYS_CLOCK 20485760 //default system clock (see DEFAULT_SYSTEM_CLOCK  in system_MK64F12.c)
 
 void uart_init()
@@ -45,7 +45,7 @@ ubd = (uint16_t)((SYS_CLOCK)/(BAUD_RATE * 16));
 UART0_BDH &= ~(UART_BDH_SBR_MASK);
 
 //distribute this ubd in BDH and BDL
-UART0_BDL |= UART_BDL_SBR(ubd);
+UART0_BDL = UART_BDL_SBR(ubd);
 UART0_BDH |= UART_BDH_SBR(ubd);
 
 //BRFD = (1/32)*BRFA 
