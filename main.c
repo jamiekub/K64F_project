@@ -156,6 +156,7 @@ int main(void)
 #endif
 
         CalibrateAccel();
+        Green_LED(LED_OFF);
       }
     }
   }
@@ -184,15 +185,15 @@ void initialize()
 	  put("I2C initialization success! :)\n\r");
 #endif
     Green_LED(LED_ON);
-    CalibrateAccel();
-    Red_LED(LED_ON);
-    Blue_LED(LED_ON);
     /* Calibrate Magnetometer at this time */
     //CalibrateMagn(); Use auto calibration instead
 #if DEBUG
     put("Press a key to end magnetometer calibration.\n\r");
 #endif
     uart_getchar();
+    Red_LED(LED_ON);
+    Blue_LED(LED_ON);
+    CalibrateAccel();
     Green_LED(LED_OFF);
     Red_LED(LED_OFF);
     Blue_LED(LED_OFF);

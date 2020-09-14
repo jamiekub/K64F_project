@@ -1,11 +1,4 @@
-%clear existing variables, close any figure windows, clear the command line
-close all
-clear all
-clc
-% Clear any existing serial ports
-delete(instrfind);
-
-sample = 1000;
+sample = 1000; %number of samples
 r_acc = 0.0001; %accelerometer covariance
 r_mag = 0.00001; %magnetometer covariance
 q_0 = 0.1; %initial motion model covariance
@@ -24,7 +17,7 @@ nu = sqrt(n + lambda);
 R = [r_acc * eye(3), zeros(3); zeros(3), r_mag * eye(3)]; %measurement covariance
 
 %measurement data
-z = zeros(6, sample);
+%z = acquire_data(sample);
 
 %predicted measurement data
 z_pri = zeros(6, 1);
@@ -41,31 +34,7 @@ x_post = zeros(3, sample);
 P_pri = zeros(3);
 P_post = zeros(3, 3, sample);
 
-% Create a serial port object
-serialPort = serial('COM4', 'BaudRate', 9600, 'DataBits', 8, 'Parity', 'none', 'StopBit', 1);
-fopen(serialPort);
-
-fwrite(serialPort, 'a', 'char', 'async');
-
 for k = 1 : sample
-    
-    %read data from sensors
-    %data rate = 6.25 Hz
-    %Make sure blue LED is on, or else we're losing data
-    ax = str2double(fgetl(serialPort));
-    ay = str2double(fgetl(serialPort));
-    az = str2double(fgetl(serialPort));
-    mx = str2double(fgetl(serialPort));
-    my = str2double(fgetl(serialPort));
-    mz = str2double(fgetl(serialPort));
-
-    z(1, k) = ax;
-    z(2, k) = ay;
-    z(3, k) = az;
-    z(4, k) = mx;
-    z(5, k) = my;
-    z(6, k) = mz;
-
     %low pass filter on accel data
     if(k > 1)
         z(1:3, k) = alpha * z(1:3, k-1) + (1 - alpha) * z(1:3, k);
@@ -86,7 +55,7 @@ for k = 1 : sample
     end
 
     %Compute sigma points
-    L = nu * sqrtm(P_pri); %need to perform square root decomposition
+    L = nu * ldl(P_pri); %need to perform square root decomposition
     X = [x_pri, x_pri + L(:, 1), x_pri + L(:, 2), x_pri + L(:, 3), ...
          x_pri - L(:, 1), x_pri - L(:, 2), x_pri - L(:, 3)]; 
     Z = [myrotx(X(1, 1)) * myroty(X(2, 1)) * myrotx(X(3, 1)) * g, ...
@@ -131,6 +100,27 @@ for k = 1 : sample
         x_post(:, k) = beta * x_post(:, k-1) + (1 - beta) * x_post(:, k);
     end
 end
-fclose(serialPort);
 
+roll = atan2d(z(2, :), z(3, :));
+pitch = atand((-1 .* z(1, :)) ./ (z(2, :) .* sind(roll) + z(3, :) .* cosd(roll)));
+yaw = atan2d((z(6, :) .* sind(roll) - z(5, :) .* cosd(roll)), (z(4, :) .* cosd(pitch) + z(5, :) .* sind(pitch) .* sind(roll) + z(6, :) .* sind(pitch) .* cosd(roll)));
 
+t = [0.16:0.16:sample*0.16];
+
+figure
+plot(t, roll);
+hold on
+plot(t, x_post(1, :));
+legend('R raw', 'R filtered')
+
+figure
+plot(t, pitch);
+hold on
+plot(t, x_post(2, :));
+legend('P raw', 'P filtered')
+
+figure
+plot(t, yaw);
+hold on
+plot(t, x_post(3, :));
+legend('Y raw', 'Y filtered')
