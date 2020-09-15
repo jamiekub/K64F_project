@@ -1,4 +1,4 @@
-sample = 1000;
+sample = 10000;
 
 %measurement data
 %z = acquire_data(sample);

@@ -3,7 +3,7 @@ function z = acquire_data(num_samples)
     delete(instrfind);
     
     % Create a serial port object
-    serialPort = serial('COM4', 'BaudRate', 9600, 'DataBits', 8, 'Parity', 'none', 'StopBit', 1);
+    serialPort = serial('COM4', 'BaudRate', 256000, 'DataBits', 8, 'Parity', 'none', 'StopBit', 1);
     fopen(serialPort);
 
     fwrite(serialPort, 'a', 'char', 'async');
@@ -13,7 +13,7 @@ function z = acquire_data(num_samples)
     
     for k = 1 : num_samples
         %read data from sensors
-        %data rate = 6.25 Hz
+        %data rate = 100 Hz
         %Make sure blue LED is on, or else we're losing data
         ax = str2double(fgetl(serialPort));
         ay = str2double(fgetl(serialPort));
