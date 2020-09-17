@@ -51,18 +51,20 @@ for k = 1 : sample
     %predict
     if(k > 2)
         x_pri = x_post(:, k-1) + tau * (x_post(:, k-1) - x_post(:, k-2));
-    else
-        x_pri = [0; 0; -36];
+    elseif(k > 1)
+        x_pri = x_post(:, k-1);
+    else 
+        x_pri = zeros(3, 1);
     end
     
     if(k > 1)
         P_pri = P_post(:, :, k-1) + q * eye(3);
     else
-        P_pri = eye(3) + q * eye(3);
+        P_pri = eye(3);
     end
 
     %Compute sigma points
-    L = nu * chol(P_pri); %need to perform square root decomposition
+    L = nu * chol(validateCovMatrix(P_pri)); %need to perform square root decomposition
     X = [x_pri, x_pri + L(:, 1), x_pri + L(:, 2), x_pri + L(:, 3), ...
          x_pri - L(:, 1), x_pri - L(:, 2), x_pri - L(:, 3)]; 
     Z = [myrotx(X(1, 1)) * myroty(X(2, 1)) * myrotz(X(3, 1)) * g, ...
@@ -81,6 +83,9 @@ for k = 1 : sample
          myrotx(X(1, 7)) * myroty(X(2, 7)) * myrotz(X(3, 7)) * b];
     
     %Predict Measurement using sigma points
+    z_pri = zeros(6, 1);
+    P_z = zeros(6);
+    P_x_z = zeros(3, 6);
     for ii = 1 : 2*n+1
         if(ii == 1)
             w = lambda / (n + lambda);
@@ -96,10 +101,15 @@ for k = 1 : sample
     end
     
     %Update with measurement data
-    K = P_x_z * pinv(P_z + R); %inverse is required
+    K = P_x_z / (P_z + R); %inverse is required
     
     x_post(:, k) = x_pri + K * (z(:, k) - z_pri);
-
+    
+    %make sure roll and yaw are between -180 and 180, 
+    %and pitch is between -90 and 90
+    rem = round(x_post(:, k)) ./ [360; 180; 360];
+    x_post(:, k) = x_post(:, k) - round(rem) .* [360; 180; 360];
+    
     P_post(:, :, k) = P_pri - K * (P_z + R) * K';
     
     %final lowpass filter
