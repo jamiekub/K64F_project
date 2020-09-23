@@ -19,6 +19,7 @@
 
 void initialize(void);
 void en_interrupts(void);
+void CalibrateMagn(void);
 
 int main(void)
 {  
@@ -186,16 +187,89 @@ void initialize()
 #endif
     Green_LED(LED_ON);
     /* Calibrate Magnetometer at this time */
-    //CalibrateMagn(); Use auto calibration instead
+    CalibrateMagn();
+    Red_LED(LED_ON);
+    Blue_LED(LED_ON);
 #if DEBUG
     put("Press a key to end magnetometer calibration.\n\r");
 #endif
     uart_getchar();
-    Red_LED(LED_ON);
-    Blue_LED(LED_ON);
     CalibrateAccel();
     Green_LED(LED_OFF);
     Red_LED(LED_OFF);
     Blue_LED(LED_OFF);
+  }
+}
+
+/**
+ * Calibrates by finding min/max values for each axis
+ * Green LED toggles for each min/max value obtained until all six are found
+ */
+void CalibrateMagn()
+{
+  uint8_t flag = 0x00;
+  uint8_t status;
+  SRAWDATA accel_data_raw;
+  SRAWDATA mag_data_raw;
+  SDATA accel_data;
+  SDATA mag_data;
+  
+  while(flag != 0x3F)
+  {
+    if(DataReady == 1)
+    {
+      DataReady = 0;
+      
+      status = ReadAccelMagnData(&accel_data_raw, &mag_data_raw);
+      ConvertAccelMagnData(&accel_data_raw, &mag_data_raw, &accel_data, &mag_data);
+      
+      if(mag_data.y < 1 && mag_data.y > -1 &&
+         mag_data.z < 1 && mag_data.z > -1 &&
+         mag_data.x > 0 && !(flag & 0x01))
+      {
+        Green_LED(LED_TOGGLE);
+        flag |= (1 << 0);
+      }
+      
+      if(mag_data.y < 1 && mag_data.y > -1 &&
+         mag_data.z < 1 && mag_data.z > -1 &&
+         mag_data.x < 0 && !(flag & 0x02))
+      {
+        Green_LED(LED_TOGGLE);
+        flag |= (1 << 1);
+      }
+      
+      if(mag_data.x < 1 && mag_data.x > -1 &&
+         mag_data.z < 1 && mag_data.z > -1 &&
+         mag_data.y > 0 && !(flag & 0x04))
+      {
+        Green_LED(LED_TOGGLE);
+        flag |= (1 << 2);
+      }
+      
+      if(mag_data.x < 1 && mag_data.x > -1 &&
+         mag_data.z < 1 && mag_data.z > -1 &&
+         mag_data.y < 0 && !(flag & 0x08))
+      {
+        Green_LED(LED_TOGGLE);
+        flag |= (1 << 3);
+      }
+      
+      if(mag_data.y < 1 && mag_data.y > -1 &&
+         mag_data.x < 1 && mag_data.x > -1 &&
+         mag_data.z > 0 && !(flag & 0x10))
+      {
+        Green_LED(LED_TOGGLE);
+        flag |= (1 << 4);
+      }
+      
+      if(mag_data.y < 1 && mag_data.y > -1 &&
+         mag_data.x < 1 && mag_data.x > -1 &&
+         mag_data.z < 0 && !(flag & 0x20))
+      {
+        Green_LED(LED_TOGGLE);
+        flag |= (1 << 5);
+      }
+    }
   }
 }

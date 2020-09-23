@@ -155,7 +155,6 @@ void FXOS8700CQ_rst(void);
 uint8_t ReadAccelMagnData(SRAWDATA *pAccelData, SRAWDATA *pMagnData);
 void ConvertAccelMagnData(SRAWDATA *accel_raw, SRAWDATA *magn_raw, SDATA *accel_data, SDATA *magn_data);
 void CalibrateAccel(void);
-void CalibrateMagn(void);
 double rad2deg(double ang);
 void ComputeRpy(SDATA *Gs, SDATA *Bs, SDATA *Rpy);
 int whoami(void);

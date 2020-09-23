@@ -6,7 +6,13 @@
 #define PI 3.1415926
 #define SYS_CLOCK 20485760 //default system clock (see DEFAULT_SYSTEM_CLOCK  in system_MK64F12.c)
 #define I2C_BUFF_SIZE 64
-#define ACTIVE_MODE 0x15
+#define DEBUG 0
+
+#if DEBUG
+  #define ACTIVE_MODE 0x2D
+#else
+  #define ACTIVE_MODE 0x15
+#endif
 
 //Global buffer for i2c data
 uint8_t I2C_buffer[I2C_BUFF_SIZE];
@@ -194,44 +200,6 @@ void CalibrateAccel()
   
   // Back to active
   i2c_write_single(FXOS8700CQ_CTRL_REG1, ACTIVE_MODE);
-}
-
-/**
-  Calibration involves gathering min/max values for each axis and
-  finging the average so that an offset can be calculated to center data around 0
-  
-  For now, I'll use experimentally determined values I found previously,
-  but in the future, values should be found at the start of each run, 
-  or calculated on the fly for runtime calibration
-*/
-void CalibrateMagn()
-{
-  int16_t max_x, max_y, max_z;
-  int16_t min_x, min_y, min_z;
-  int16_t avg_x, avg_y, avg_z;
-  
-  //Experimental min/max values rounded to nearest uT
-  //DO NOT use these unless you're sitting at my desk
-  max_x = 113 * 10;
-  max_y = 58 * 10;
-  max_x = 70 * 10;
-  
-  min_x = 15 * 10;
-  min_x = -48 * 10;
-  min_x = -26 * 10;
-  
-  avg_x = (max_x + min_x) / 2;
-  avg_y = (max_y + min_y) / 2;
-  avg_z = (max_z + min_z) / 2;
-
-  I2C_buffer[0] = FXOS8700CQ_M_OFF_X_MSB;
-  I2C_buffer[1] = (int8_t)((avg_x >> 7) & 0xFF);
-  I2C_buffer[2] = (int8_t)((avg_x << 1) & 0xFF);
-  I2C_buffer[3] = (int8_t)((avg_y >> 7) & 0xFF);
-  I2C_buffer[4] = (int8_t)((avg_y << 1) & 0xFF);
-  I2C_buffer[5] = (int8_t)((avg_z >> 7) & 0xFF);
-  I2C_buffer[6] = (int8_t)((avg_z << 1) & 0xFF);
-  i2c_write_multi(I2C_buffer, 6);
 }
 
 int whoami()

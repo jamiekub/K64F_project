@@ -8,7 +8,12 @@
 
 #include "MK64F12.h"
 #include "uart_drvr.h"
-#define BAUD_RATE 256000   //default baud rate 
+#define DEBUG 0
+#if DEBUG
+  #define BAUD_RATE 9600   //default baud rate 
+#else
+  #define BAUD_RATE 256000 //baud rate for 100Hz ODR
+#endif
 #define SYS_CLOCK 20485760 //default system clock (see DEFAULT_SYSTEM_CLOCK  in system_MK64F12.c)
 
 void uart_init()
