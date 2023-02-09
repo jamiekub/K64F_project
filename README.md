@@ -12,7 +12,3 @@ Experimentation with obtaining orientation through sensor fusion of acceleromete
 	c. Tune filter
 	d. Port filter code to run on uController
 3. Characterize Error of Kalman filter
-
-4. ???
-
-5. Profit
